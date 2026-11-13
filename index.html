@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arduino для початківців</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--tx:#1c2430;--mut:#5b6675;--ac:#0a7d82;--acb:#e0f3f3;--bd:#d8dde4;--code:#14202b;--codetx:#d7e3ee;--hi:#ffd54a;--ok:#1e8e3e;--bad:#c62828;--red:#e53935;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12171d;--card:#1b222b;--tx:#e8edf2;--mut:#9aa6b4;--ac:#4fd1c5;--acb:#173a3c;--bd:#2e3946;--code:#0b1015}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:1.6rem;margin:.2em 0}h2{font-size:1.3rem;margin:1.2em 0 .4em}h3{font-size:1.05rem;margin:.2em 0}
+.sub{color:var(--mut);margin:0 0 12px}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+nav button{flex:1;min-width:120px;padding:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;font:inherit;cursor:pointer}
+nav button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px 16px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+code,pre{font-family:ui-monospace,Consolas,monospace}
+code{background:var(--acb);padding:1px 5px;border-radius:5px}
+pre{background:var(--code);color:var(--codetx);padding:12px;border-radius:10px;overflow-x:auto;margin:8px 0;font-size:.9rem;line-height:1.6}
+pre .l{display:block;padding:0 6px;border-radius:4px}pre .l.hi{background:var(--hi);color:#000}
+.tip{border-left:4px solid var(--ac);background:var(--acb);padding:8px 12px;border-radius:6px;margin:10px 0}
+.btn{padding:9px 14px;border:0;border-radius:9px;background:var(--ac);color:#fff;font:inherit;cursor:pointer;margin:2px}
+.btn.s{background:var(--mut)}
+.row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.led{width:70px;height:70px;border-radius:50%;background:#5a2a2a;border:3px solid #333;transition:.1s;flex:none}
+.led.on{background:var(--red);box-shadow:0 0 30px 10px rgba(229,57,53,.7)}
+.msg{min-height:3.2em;background:var(--acb);padding:8px 12px;border-radius:8px;flex:1;min-width:200px}
+.stat{color:var(--mut);font-size:.9rem}
+svg text{fill:var(--tx);font:12px system-ui}svg .w{stroke:var(--tx);stroke-width:2;fill:none}svg .hl{stroke:var(--red)}svg .lo{stroke:#2a6fdb}
+.badge{display:inline-block;font:700 1.1rem ui-monospace,monospace;padding:6px 12px;border-radius:8px;background:var(--code);color:#fff}
+.hi-b{color:#ff8a80}.lo-b{color:#82b1ff}
+select,input[type=range]{font:inherit;max-width:100%}
+select{padding:6px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx)}
+.q{margin:14px 0}.q button{display:block;width:100%;text-align:left;margin:5px 0;padding:9px 12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:9px;font:inherit;cursor:pointer}
+.q button.ok{background:var(--ok);color:#fff}.q button.no{background:var(--bad);color:#fff}
+.why{color:var(--mut);font-size:.92rem;display:none}
+table{border-collapse:collapse;width:100%;font-size:.95rem}td,th{border:1px solid var(--bd);padding:6px 8px;text-align:left}
+</style>
+</head>
+<body>
+<main>
+<h1>🔌 Arduino: перша програма</h1>
+<p class="sub">Інтерактивний урок для 10 класу · ≈ 40 хвилин · без досвіду програмування</p>
+<nav id="nav">
+<button class="on" data-t="1">1. setup() і loop()</button>
+<button data-t="2">2. Функції пінів</button>
+<button data-t="3">3. Кнопка і резистори</button>
+<button data-t="4">4. Перевір себе</button>
+</nav>
+
+<!-- 1 -->
+<section id="s1" class="on">
+<div class="card">
+<h2>Що таке скетч?</h2>
+<p>Програма для Arduino називається <b>скетч</b>. Плата не вміє «думати» сама — вона виконує команди, які ми записали. Кожен скетч складається з двох обов’язкових частин:</p>
+<div class="grid">
+<div class="card"><h3><code>setup()</code> — «підготовка»</h3><p>Виконується <b>один раз</b> при вмиканні або натисканні Reset. Тут налаштовуємо піни: що вхід, що вихід.</p></div>
+<div class="card"><h3><code>loop()</code> — «основна робота»</h3><p>Після <code>setup()</code> виконується <b>знову і знову, без кінця</b>, поки є живлення. Це серце програми.</p></div>
+</div>
+<div class="tip">💡 Уяви ранок: <code>setup()</code> — прокинутись і зібрати рюкзак (раз), <code>loop()</code> — уроки, які повторюються щодня.</div>
+</div>
+
+<div class="card">
+<h2>▶ Виконай програму крок за кроком</h2>
+<p>Натискай «Крок» — підсвічується рядок, який Arduino виконує <b>зараз</b>. Зверни увагу: <code>setup()</code> спрацює лише раз, а <code>loop()</code> крутиться по колу.</p>
+<pre id="code1"><span class="l">void setup() {</span><span class="l">  pinMode(13, OUTPUT);</span><span class="l">}</span><span class="l">void loop() {</span><span class="l">  digitalWrite(13, HIGH);</span><span class="l">  delay(1000);</span><span class="l">  digitalWrite(13, LOW);</span><span class="l">  delay(1000);</span><span class="l">}</span></pre>
+<div class="row"><div class="led" id="led1"></div><div class="msg" id="msg1">Натисни «Крок», щоб почати.</div></div>
+<p class="stat" id="stat1">setup() виконано: 0 раз · loop() повторів: 0</p>
+<button class="btn" id="step1">Крок ▶</button>
+<button class="btn s" id="auto1">Авто</button>
+<button class="btn s" id="reset1">Скинути (Reset)</button>
+</div>
+</section>
+
+<!-- 2 -->
+<section id="s2">
+<div class="card">
+<h2>Чотири головні команди</h2>
+<table>
+<tr><th>Команда</th><th>Що робить</th><th>Приклад</th></tr>
+<tr><td><code>pinMode(пін, режим)</code></td><td>Задає роль піна: <code>OUTPUT</code> — вихід (Arduino керує), <code>INPUT</code> — вхід (Arduino слухає), <code>INPUT_PULLUP</code> — вхід з внутрішнім резистором</td><td><code>pinMode(13, OUTPUT);</code></td></tr>
+<tr><td><code>digitalWrite(пін, значення)</code></td><td>Подає на вихід <code>HIGH</code> (5 В, «увімкнено») або <code>LOW</code> (0 В, «вимкнено»)</td><td><code>digitalWrite(13, HIGH);</code></td></tr>
+<tr><td><code>digitalRead(пін)</code></td><td><b>Читає</b> стан входу й повертає <code>HIGH</code> або <code>LOW</code></td><td><code>int v = digitalRead(2);</code></td></tr>
+<tr><td><code>delay(мс)</code></td><td>Зупиняє програму на вказану кількість <b>мілісекунд</b> (1000 мс = 1 с)</td><td><code>delay(500);</code></td></tr>
+</table>
+<div class="tip">⚠️ Пам’ятай: <code>pinMode</code> зазвичай пишемо в <code>setup()</code>, до того як користуємось пін. Не забувай <code>;</code> в кінці команди та <b>великі/малі літери</b>: <code>digitalWrite</code>, а не <code>digitalwrite</code>.</div>
+</div>
+
+<div class="card">
+<h2>🔧 Експериментуй із delay()</h2>
+<p>Рухай повзунок — змінюється код і швидкість блимання. Потім вимкни <code>pinMode</code> і побачиш, що буде.</p>
+<label>delay: <b id="dv">500</b> мс</label><br>
+<input type="range" id="dl" min="50" max="2000" step="50" value="500" style="width:100%">
+<p><label><input type="checkbox" id="pm" checked> Є рядок <code>pinMode(13, OUTPUT);</code></label></p>
+<pre id="code2"></pre>
+<div class="row"><div class="led" id="led2"></div><div class="msg" id="msg2"></div></div>
+</div>
+</section>
+
+<!-- 3 -->
+<section id="s3">
+<div class="card">
+<h2>Кнопка і проблема «плаваючого» входу</h2>
+<p>Щоб Arduino «відчула» кнопку, пін має бути <code>INPUT</code>, а ми читаємо його через <code>digitalRead()</code>. Але якщо пін <b>ні до чого не підключений</b> (кнопка відпущена), він ловить наводки з повітря і видає випадкові <code>HIGH</code>/<code>LOW</code>. Це називається <b>плаваючий вхід</b>. Лікування — <b>резистор</b>, який «тягне» пін до певного рівня:</p>
+<ul>
+<li><b>Pull-down</b> (підтяжка до землі) — резистор до GND. Кнопка відпущена → <code>LOW</code>, натиснута → <code>HIGH</code>.</li>
+<li><b>Pull-up</b> (підтяжка до живлення) — резистор до 5 В. Кнопка відпущена → <code>HIGH</code>, натиснута → <code>LOW</code> (логіка <b>інвертована</b>!).</li>
+</ul>
+<p>Arduino має <b>внутрішні</b> pull-up резистори (≈20–50 кОм): <code>pinMode(2, INPUT_PULLUP);</code> — і зовнішній резистор не потрібен.</p>
+</div>
+<div class="card">
+<h2>🔬 Лабораторія</h2>
+<label>Схема: <select id="mode">
+<option value="pd">Pull-down (зовнішній)</option>
+<option value="pu">Pull-up (зовнішній)</option>
+<option value="ipu">INPUT_PULLUP (внутрішній)</option>
+<option value="fl">Без резистора (плаваючий вхід)</option>
+</select></label>
+<div class="row">
+<svg id="sch" viewBox="0 0 320 200" width="320" style="max-width:100%"></svg>
+<div style="flex:1;min-width:200px">
+<button class="btn" id="press" style="width:100%;padding:16px">👆 Натисни і тримай кнопку</button>
+<p>На піні 2 зараз:</p>
+<div class="badge" id="rd">—</div>
+<p id="exp" class="stat"></p>
+</div></div>
+<pre id="code3"></pre>
+<div class="tip">💡 Спробуй «Без резистора» і не тисни кнопку — значення стрибатимуть. Саме тому резистор обов’язковий.</div>
+</div>
+<div class="card">
+<h2>Повний приклад: кнопка керує світлодіодом</h2>
+<pre>void setup() {
+  pinMode(2, INPUT_PULLUP);  // кнопка
+  pinMode(13, OUTPUT);       // світлодіод
+}
+void loop() {
+  if (digitalRead(2) == LOW) {   // натиснута (pull-up!)
+    digitalWrite(13, HIGH);
+  } else {
+    digitalWrite(13, LOW);
+  }
+}</pre>
+</div>
+</section>
+
+<!-- 4 -->
+<section id="s4">
+<div class="card"><h2>📝 Міні-тест</h2><div id="quiz"></div><p id="score" style="font-weight:700"></p></div>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("on",x===b));
+ document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id==="s"+b.dataset.t));
+});
+
+/* --- Sim 1 --- */
+const order=[1,4,5,6,7];let idx=-1,setups=0,loops=0,isOut=false,timer=null;
+const msgs={
+1:"pinMode(13, OUTPUT): пін 13 став виходом — тепер Arduino може керувати світлодіодом. Це виконується лише один раз.",
+4:"digitalWrite(13, HIGH): на піні 5 В — світлодіод світиться.",
+5:"delay(1000): чекаємо 1000 мс = 1 секунду. Світлодіод далі світить.",
+6:"digitalWrite(13, LOW): на піні 0 В — світлодіод погас.",
+7:"delay(1000): чекаємо ще секунду. Кінець loop() — і він починається знову з першого рядка!"};
+function step1(){
+ idx=(idx+1)%order.length; if(idx===0&&setups>0){idx=1}
+ const ln=order[idx];
+ document.querySelectorAll("#code1 .l").forEach((e,i)=>e.classList.toggle("hi",i===ln));
+ if(ln===1){isOut=true;setups=1}
+ if(ln===4)$("led1").classList.add("on");
+ if(ln===6)$("led1").classList.remove("on");
+ if(ln===7)loops++;
+ $("msg1").textContent=msgs[ln];
+ $("stat1").textContent=`setup() виконано: ${setups} раз · loop() повторів: ${loops}`;
+}
+$("step1").onclick=step1;
+$("auto1").onclick=()=>{if(timer){clearInterval(timer);timer=null;$("auto1").textContent="Авто"}else{timer=setInterval(step1,1100);$("auto1").textContent="Стоп"}};
+$("reset1").onclick=()=>{idx=-1;setups=0;loops=0;$("led1").classList.remove("on");$("msg1").textContent="Reset! Плата почала спочатку: знову виконається setup().";$("stat1").textContent="setup() виконано: 0 раз · loop() повторів: 0";document.querySelectorAll("#code1 .l").forEach(e=>e.classList.remove("hi"))};
+
+/* --- Sim 2 --- */
+let t2=null,on2=false;
+function upd2(){
+ const d=+$("dl").value,pm=$("pm").checked;
+ $("dv").textContent=d;
+ $("code2").textContent="void setup() {\n"+(pm?"  pinMode(13, OUTPUT);\n":"  // pinMode не вказано\n")+"}\nvoid loop() {\n  digitalWrite(13, HIGH);\n  delay("+d+");\n  digitalWrite(13, LOW);\n  delay("+d+");\n}";
+ $("msg2").textContent=pm?`Один повний цикл триває ${2*d} мс, тобто ≈ ${(1000/(2*d)).toFixed(1)} блимань за секунду.`:"Без pinMode пін лишається входом, тому світлодіод не світиться (або ледь тліє). Завжди налаштовуй пін!";
+ clearInterval(t2);on2=false;$("led2").classList.remove("on");
+ if(pm)t2=setInterval(()=>{on2=!on2;$("led2").classList.toggle("on",on2)},d);
+}
+$("dl").oninput=upd2;$("pm").onchange=upd2;upd2();
+
+/* --- Sim 3 --- */
+let pressed=false,rnd=false;
+const exps={pd:"Резистор до GND тримає LOW. Натиснули — 5 В йде на пін → HIGH.",
+pu:"Резистор до 5 В тримає HIGH. Натиснули — пін з’єднався із GND → LOW.",
+ipu:"Те саме, що pull-up, але резистор уже всередині мікроконтролера. Менше деталей!",
+fl:"Пін «висить у повітрі»: без натискання значення випадкове."};
+const codes={pd:"pinMode(2, INPUT);        // + резистор 10 кОм до GND",pu:"pinMode(2, INPUT);        // + резистор 10 кОм до 5V",ipu:"pinMode(2, INPUT_PULLUP); // резистор не потрібен",fl:"pinMode(2, INPUT);        // ❌ без резистора"};
+function level(){const m=$("mode").value;
+ if(m==="pd")return pressed;
+ if(m==="pu"||m==="ipu")return !pressed;
+ return pressed?true:rnd}
+function res(y0,y1,lbl){return `<line class="w" x1="120" y1="${y0}" x2="120" y2="${y0+14}"/><rect class="w" x="108" y="${y0+14}" width="24" height="${y1-y0-28}"/><line class="w" x1="120" y1="${y1-14}" x2="120" y2="${y1}"/><text x="140" y="${(y0+y1)/2+4}">${lbl}</text>`}
+function btn(y0,y1){return `<line class="w" x1="120" y1="${y0}" x2="120" y2="${y0+14}"/>`+(pressed?`<line class="w" x1="120" y1="${y0+14}" x2="120" y2="${y1-14}"/>`:`<line class="w" x1="120" y1="${y0+14}" x2="140" y2="${y1-18}"/>`)+`<circle cx="120" cy="${y0+14}" r="3"/><circle cx="120" cy="${y1-14}" r="3"/><line class="w" x1="120" y1="${y1-14}" x2="120" y2="${y1}"/><text x="145" y="${(y0+y1)/2+4}">кнопка</text>`}
+function draw3(){
+ const m=$("mode").value,h=level();
+ let top,bot;
+ if(m==="pd"){top=btn(25,100);bot=res(100,175,"10 кОм")}
+ else if(m==="pu"){top=res(25,100,"10 кОм");bot=btn(100,175)}
+ else if(m==="ipu"){top=res(25,100,"внутрішній");bot=btn(100,175)}
+ else{top=btn(25,100);bot=""}
+ $("sch").innerHTML=`<text x="95" y="14">+5 В</text><line class="w" x1="100" y1="22" x2="140" y2="22"/>${top}${bot}<line class="w" x1="100" y1="178" x2="140" y2="178"/><text x="102" y="194">GND</text><circle cx="120" cy="100" r="4"/><line class="w ${h?"hl":"lo"}" x1="120" y1="100" x2="250" y2="100"/><rect x="250" y="88" width="62" height="24" rx="5" fill="none" stroke="currentColor"/><text x="258" y="104">Пін 2</text>`;
+ $("rd").innerHTML=`digitalRead(2) = <span class="${h?"hi-b":"lo-b"}">${h?"HIGH":"LOW"}</span>`;
+ $("exp").textContent=exps[m];$("code3").textContent=codes[m];
+}
+const pb=$("press");
+["pointerdown"].forEach(e=>pb.addEventListener(e,ev=>{ev.preventDefault();pressed=true;draw3()}));
+["pointerup","pointerleave","pointercancel"].forEach(e=>pb.addEventListener(e,()=>{pressed=false;draw3()}));
+$("mode").onchange=draw3;
+setInterval(()=>{if($("mode").value==="fl"&&!pressed){rnd=Math.random()>.5;draw3()}},350);
+draw3();
+
+/* --- Quiz --- */
+const Q=[
+{q:"Скільки разів виконується setup()?",o:["Нескінченно","Один раз на старті","Кожну секунду"],a:1,w:"setup() — це підготовка, вона спрацьовує лише при увімкненні або Reset."},
+{q:"Що робить delay(2000)?",o:["Чекає 2 секунди","Чекає 2 мілісекунди","Вмикає пін 2"],a:0,w:"Значення в мілісекундах: 2000 мс = 2 с."},
+{q:"Яка команда подає 5 В на пін 8?",o:["pinMode(8, HIGH)","digitalRead(8)","digitalWrite(8, HIGH)"],a:2,w:"Для запису рівня на вихід — digitalWrite()."},
+{q:"Кнопка з INPUT_PULLUP, її НЕ натиснуто. Що поверне digitalRead()?",o:["LOW","HIGH","Випадкове значення"],a:1,w:"Pull-up тягне пін до 5 В, тому у спокої — HIGH. Натиснули — LOW."},
+{q:"Навіщо потрібен pull-down резистор?",o:["Щоб вхід не «плавав» і у спокої був LOW","Щоб кнопка світилась","Щоб збільшити напругу до 12 В"],a:0,w:"Резистор задає визначений рівень, коли кнопка не натиснута."}];
+let done=0,sc=0;
+Q.forEach((x,i)=>{const d=document.createElement("div");d.className="q";
+ d.innerHTML=`<b>${i+1}. ${x.q}</b>`;
+ const w=document.createElement("div");w.className="why";w.textContent="💬 "+x.w;
+ x.o.forEach((t,j)=>{const b=document.createElement("button");b.textContent=t;
+  b.onclick=()=>{if(d.dataset.d)return;d.dataset.d=1;done++;
+   if(j===x.a){b.classList.add("ok");sc++}else{b.classList.add("no");d.querySelectorAll("button")[x.a].classList.add("ok")}
+   w.style.display="block";
+   if(done===Q.length)$("score").textContent=`Результат: ${sc} з ${Q.length} ${sc===Q.length?"🎉 Відмінно!":sc>=3?"👍 Добре, повтори складні моменти.":"📘 Перечитай уроки та спробуй ще."}`};
+  d.appendChild(b)});
+ d.appendChild(w);$("quiz").appendChild(d)});
+</script>
+</body>
+</html>
